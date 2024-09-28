@@ -50,6 +50,46 @@ void baseStopControl() {
     }
 }
 
+
+
+
+
+
+
+
+
+//完成映射函数的定义
+void newcontrol(){
+    /*在查看函数后发现press_A已实现按键的防抖功能，故此处不再实现防抖以防冗余
+     if (A && !last_A) press_A = true;
+     if (last_A && !A) release_A = true, press_A = false;*/
+    if(press_A){
+        press_A=false;
+        motor_new.spin(directionType::fwd, 100, voltageUnits::mV);//由于未给出具体速度且定义时该电机默认正转，故此处不作过多计算
+    }
+    if(press_B){
+        press_B=false;
+        motor_new.spin(directionType::rev, 100, voltageUnits::mV);//按下B键，电机反转
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void intakerControl() {
     if (R1) {
         moveIntaker(100);

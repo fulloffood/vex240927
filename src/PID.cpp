@@ -22,7 +22,7 @@ using namespace std;
  * pid.setTarget(100);
  * pid.setErrorTolerance(1);
  * pid.setCoefficient(1, 0.1, 0.1);
- * while(!pid.taragetArrived()){
+ * while(!pid.targetArrived()){
  *      pid.update(curr_value);
  *      output = pid.getOutput();
  *      // do something with output
@@ -49,11 +49,31 @@ void PID::setArrived(bool _arrived) { arrived = _arrived; }
 bool PID::targetArrived() { return arrived; }
 double PID::getOutput() { return output; }
 
+
+
+
 void PID::update(double input) {
     error_curt = target - input;  // calculate current error
     //TODO: calculate the contribution of P, I, D with kp, ki, kd
+    //获取两次计算的时间差
+    jump_time=my_timer.getTimeDouble();
 
-    
+     // 比例项
+    double P = kp * error_curt;  
+  
+    // 积分项
+    error_int += error_curt * jump_time;
+    if (abs(error_int) > I_max) error_int = I_max * sign(error_int);  // 限制大小，防止溢出
+    double I = ki * error_int;  
+  
+    // 微分项
+    double derivative = (error_curt - error_prev) / jump_time;  
+    double D = kd * derivative;  
+  
+    // 更新数据和时间
+    error_prev = error_curt;  
+    my_timer.reset();
+
     if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
                                         // maintaining a low enough speed
         arrived = true;
@@ -67,8 +87,25 @@ void PosPID::update(Point input) {
     Vector err = target_point - input;
     error_curt = err.mod();  // calculate current error
     //TODO: calculate the contribution of P, I, D with kp, ki, kd
+    //获取两次计算的时间差
+    jump_time=my_timer.getTimeDouble();
 
-    
+    // 比例项  
+    double P = kp * error_curt;  
+  
+    // 积分项
+    error_int += error_curt * jump_time;
+    if (abs(error_int) > I_max) error_int = I_max * sign(error_int);  // 限制大小，防止溢出
+    double I = ki * error_int;  
+  
+    // 微分项
+    double derivative = (error_curt - error_prev) / jump_time;  
+    double D = kd * derivative;  
+  
+    // 更新数据和时间
+    error_prev = error_curt;  
+    my_timer.reset();
+
     if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
                                         // maintaining a low enough speed
         arrived = true;
@@ -79,8 +116,25 @@ void PosPID::update(Point input) {
 void DirPID::update(double input) {
     error_curt = degNormalize(target - input);  // calculate current error
     //TODO: calculate the contribution of P, I, D with kp, ki, kd
-
+    //获取两次计算的时间差
+    jump_time=my_timer.getTimeDouble();
     
+    // 比例项
+    double P = kp * error_curt;  
+  
+    // 积分项
+    error_int += error_curt * jump_time;
+    if (abs(error_int) > I_max) error_int = I_max * sign(error_int);  // 限制大小
+    double I = ki * error_int;  
+  
+    // 微分项
+    double derivative = (error_curt - error_prev) / jump_time;  
+    double D = kd * derivative;  
+  
+    // 更新数据和时间
+    error_prev = error_curt;  
+    my_timer.reset();
+
     if (abs(error_curt) <= error_tol) {  // Exit when staying in tolerated region and
                                         // maintaining a low enough speed
         arrived = true;
